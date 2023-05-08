@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	svg "github.com/ajstarks/svgo"
 	"github.com/joho/godotenv"
 	"math/rand"
@@ -22,11 +23,12 @@ func main() {
 		res.Header().Set("Content-Type", "image/svg+xml")
 
 		// setting random seed
-		seedStr := []rune(req.URL.Query().Get("seed"))
+		seedStr := req.URL.Query().Get("seed")
 		seed := int64(1)
-		for c := range seedStr {
+		for _, c := range seedStr {
 			seed *= int64(c - '0')
 		}
+		fmt.Println(seed)
 		rand.Seed(seed)
 
 		// getting width and height with default 7x7 and in range of [1..100]
@@ -61,10 +63,7 @@ func main() {
 		img.Start(w, h)
 		for i := 0; i < w; i++ {
 			for j := 0; j < h; j++ {
-				rand.Shuffle(2, func(i, j int) {
-					colors[i], colors[j] = colors[j], colors[i]
-				})
-				currentColor := colors[0]
+				currentColor := colors[rand.Intn(2)]
 				img.Rect(i, j, 1, 1, "fill:"+currentColor+";stroke:none")
 			}
 		}
