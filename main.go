@@ -1,9 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	svg "github.com/ajstarks/svgo"
 	"github.com/joho/godotenv"
+	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -16,6 +18,7 @@ func main() {
 	// h 	- height (if not defined 7 or same as defined width)	in range [1..100]
 	// <host>/render?seed=any&w=number&h=number
 	http.HandleFunc("/render", func(res http.ResponseWriter, req *http.Request) {
+		fmt.Println("[hashMap]")
 		if req.Method != "GET" {
 			res.WriteHeader(http.StatusBadRequest)
 			return
@@ -68,6 +71,63 @@ func main() {
 			}
 		}
 		img.End()
+	})
+	http.HandleFunc("/picsum", func(res http.ResponseWriter, req *http.Request) {
+		fmt.Println("[picsum]")
+		if req.Method != "GET" {
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if !req.URL.Query().Has("seed") {
+			res.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		// fetching info from picsum/.../info and getting donwload url
+		fetchedData, err := http.Get("https://picsum.photos/seed/" + req.URL.Query().Get("seed") + "/info")
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			panic(err)
+			return
+		}
+		data, err := io.ReadAll(fetchedData.Body)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			panic(err)
+			return
+		}
+		type downloadUrl struct {
+			Url string `json:"download_url"`
+		}
+		var url downloadUrl
+		err = json.Unmarshal(data, &url)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			panic(err)
+			return
+		}
+
+		// processing download url
+		url.Url = url.Url[:len(url.Url)-9] + "64/64"
+
+		// fetching entire image
+		fetchedData, err = http.Get(url.Url)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			panic(err)
+			return
+		}
+		data, err = io.ReadAll(fetchedData.Body)
+		if err != nil {
+			res.WriteHeader(http.StatusInternalServerError)
+			panic(err)
+			return
+		}
+
+		res.Header().Set("Content-Type", "image/jpeg")
+		_, _ = res.Write(data)
+		res.WriteHeader(http.StatusOK)
+		return
 	})
 	err := godotenv.Load(".env")
 	err = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
