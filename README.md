@@ -1,10 +1,16 @@
-# Hash maps
+# Random Image API
 
 ## Usage
-**http://`host`:`port`/render?seed=`any`&w=`[1..100]`&h=`[1..100]`**
-> width and height are not required, default is 7x7
+host: https://readyyyk-randimgapi.onrender.com/
+**http://`host`:`port`/hashmaps?`...[url params]`**
+**http://`host`:`port`/picsum?`...[url params]`**
+> width and height defaults:
+>  - hashmaps - 7x7
+>  - picsum - 64x64
 
-> returns `svg` image
+> returns:
+> - hashmaps - `svg` image
+> - picsum - `jpeg` image
 
 ## Installation
 
