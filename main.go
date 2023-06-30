@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
 	svg "github.com/ajstarks/svgo"
-	"github.com/joho/godotenv"
+
+	// "github.com/joho/godotenv"
 	"io"
 	"math"
 	"math/rand"
@@ -60,7 +62,7 @@ func getWHUrlParams(req *http.Request, w *int, h *int, maxW int, maxH int) (err 
 
 func main() {
 	http.HandleFunc("/", func(res http.ResponseWriter, req *http.Request) {
-		fileData, err := os.ReadFile("index.html")
+		fileData, err := os.ReadFile("./index.html")
 		if checkError(err, http.StatusInternalServerError, res) {
 			return
 		}
@@ -68,7 +70,7 @@ func main() {
 		_, _ = res.Write(fileData)
 	})
 
-	// seed - required
+	// seed - seed for random func
 	// w 	- width (if not defined 7) 								in range [1..100]
 	// h 	- height (if not defined 7 or same as defined width)	in range [1..100]
 	// <host>/render?seed=any&w=number&h=number
@@ -122,7 +124,7 @@ func main() {
 		}
 		fmt.Println(" seed: " + seed)
 
-		// fetching info from picsum/.../info and getting donwload url
+		// fetching info from picsum/.../info and getting download url
 		fetchedData, err := http.Get("https://picsum.photos/seed/" + seed + "/info")
 		if checkError(err, http.StatusInternalServerError, res) {
 			return
@@ -181,9 +183,9 @@ func main() {
 		return
 	})
 
-	err := godotenv.Load(".env")
+	// err := godotenv.Load(".env")
 	fmt.Println("[SERVER] - starting on :" + os.Getenv("PORT") + " ...")
-	err = http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	if err != nil {
 		panic(err)
 	}
